@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Autores')}"></head>
+<body>
+<a th:replace="~{fragments/layout :: saltar}"></a>
+<nav th:replace="~{fragments/layout :: navbar('autores')}"></nav>
+<main class="container" id="contenido">
+    <div th:replace="~{fragments/layout :: mensajes}"></div>
+
+    <div class="formulario">
+        <header class="cabecera">
+            <div>
+                <h1>Nuevo autor</h1>
+                <p class="resumen">Después podrás asignarlo a sus libros desde la ficha de cada libro.</p>
+            </div>
+        </header>
+
+        <form class="ficha ficha-margen" method="post" th:object="${autor}" th:action="@{/autores}" novalidate>
+            <div class="ficha-cabecera">
+                <h2>Datos del autor</h2>
+                <p class="leyenda-obligatorio">* obligatorio</p>
+            </div>
+            <div class="ficha-cuerpo">
+                <div class="row g-3">
+                    <div class="col-md-7">
+                        <label for="nombre" class="form-label obligatorio">Nombre</label>
+                        <input type="text" id="nombre" class="form-control" th:field="*{nombre}" required
+                               aria-describedby="nombre-ayuda"
+                               th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'">
+                        <div id="nombre-ayuda" class="form-text">Nombre y apellidos, p. ej. Isabel Allende</div>
+                        <div class="invalid-feedback" th:errors="*{nombre}"></div>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="nacionalidad" class="form-label">Nacionalidad</label>
+                        <input type="text" id="nacionalidad" class="form-control" th:field="*{nacionalidad}"
+                               th:classappend="${#fields.hasErrors('nacionalidad')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:errors="*{nacionalidad}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ficha-pie">
+                <a class="btn btn-secondary" th:href="@{/autores}">Cancelar</a>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar</button>
+            </div>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

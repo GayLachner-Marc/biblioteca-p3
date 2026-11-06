@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Usuarios')}"></head>
+<body>
+<a th:replace="~{fragments/layout :: saltar}"></a>
+<nav th:replace="~{fragments/layout :: navbar('usuarios')}"></nav>
+<main class="container" id="contenido">
+    <div th:replace="~{fragments/layout :: mensajes}"></div>
+
+    <header class="cabecera">
+        <div>
+            <h1>Usuarios</h1>
+            <p class="resumen" th:unless="${#lists.isEmpty(usuarios)}">
+                <span class="num" th:text="${#lists.size(usuarios)}">5</span> socios dados de alta
+            </p>
+        </div>
+        <a th:href="@{/usuarios/nuevo}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo<span class="etiqueta-larga"> usuario</span></a>
+    </header>
+
+    <section class="ficha" aria-label="Lista de usuarios">
+        <div th:if="${#lists.isEmpty(usuarios)}" class="sin-registros">
+            <i class="bi bi-people" aria-hidden="true"></i>
+            <p>No hay usuarios registrados todavía.</p>
+            <a th:href="@{/usuarios/nuevo}" class="btn btn-primary btn-sm">Dar de alta el primero</a>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(usuarios)}" class="table-responsive">
+            <table class="table tabla table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col" class="d-none d-md-table-cell">Email</th>
+                    <th scope="col" class="d-none d-lg-table-cell">Teléfono</th>
+                    <th scope="col" class="der d-none d-sm-table-cell">Alta</th>
+                    <th scope="col" class="der">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u : ${usuarios}">
+                    <td>
+                        <span class="titulo-libro" th:text="${u.apellidos + ', ' + u.nombre}">Fernández Gómez, Sara</span>
+                        <span class="secundario d-md-none" th:text="${u.email}">sara.fernandez@example.com</span>
+                    </td>
+                    <td class="d-none d-md-table-cell"><a th:href="'mailto:' + ${u.email}" th:text="${u.email}">sara.fernandez@example.com</a></td>
+                    <td class="datos d-none d-lg-table-cell">
+                        <span th:if="${u.telefono != null and !u.telefono.isBlank()}" th:text="${u.telefono}">600555666</span>
+                        <span th:unless="${u.telefono != null and !u.telefono.isBlank()}" class="vacio">—</span>
+                    </td>
+                    <td class="fecha d-none d-sm-table-cell" th:text="${#temporals.format(u.fechaAlta, 'dd/MM/yyyy')}">30/05/2026</td>
+                    <td class="der">
+                        <div class="acciones">
+                            <a th:href="@{/usuarios/{id}/editar(id=${u.id})}" class="btn btn-warning btn-sm"
+                               th:attr="aria-label='Editar a ' + ${u.nombreCompleto}"><i class="bi bi-pencil" aria-hidden="true"></i> <span class="etiqueta">Editar</span></a>
+                            <form th:action="@{/usuarios/{id}/eliminar(id=${u.id})}" method="post"
+                                  onsubmit="return confirm('¿Seguro que quieres eliminar este usuario?');">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                        th:attr="aria-label='Eliminar a ' + ${u.nombreCompleto}"><i class="bi bi-trash3" aria-hidden="true"></i> <span class="etiqueta">Eliminar</span></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

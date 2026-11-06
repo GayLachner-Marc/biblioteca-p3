@@ -1,0 +1,40 @@
+erDiagram
+    USUARIOS ||--o{ PRESTAMOS : "realiza"
+    LIBROS ||--o{ PRESTAMOS : "se presta en"
+    LIBROS ||--o{ LIBRO_AUTOR : "tiene"
+    AUTORES ||--o{ LIBRO_AUTOR : "escribe"
+
+    USUARIOS {
+        BIGINT id PK "AUTO_INCREMENT"
+        VARCHAR(100) nombre
+        VARCHAR(150) apellidos
+        VARCHAR(150) email UK
+        VARCHAR(20) telefono "NULL"
+        DATE fecha_alta
+    }
+    LIBROS {
+        BIGINT id PK "AUTO_INCREMENT"
+        VARCHAR(200) titulo
+        VARCHAR(20) isbn UK
+        VARCHAR(150) editorial "NULL"
+        INT anio_publicacion "NULL"
+        INT ejemplares_disponibles "DEFAULT 1"
+    }
+    AUTORES {
+        BIGINT id PK "AUTO_INCREMENT"
+        VARCHAR(150) nombre
+        VARCHAR(100) nacionalidad "NULL"
+    }
+    LIBRO_AUTOR {
+        BIGINT libro_id PK, FK "ON DELETE CASCADE"
+        BIGINT autor_id PK, FK "ON DELETE CASCADE"
+    }
+    PRESTAMOS {
+        BIGINT id PK "AUTO_INCREMENT"
+        BIGINT usuario_id FK
+        BIGINT libro_id FK
+        DATE fecha_prestamo
+        DATE fecha_devolucion_prevista
+        DATE fecha_devolucion "NULL"
+        VARCHAR(20) estado "DEFAULT ACTIVO; CHECK ACTIVO, DEVUELTO, RETRASADO"
+    }

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Inicio')}"></head>
+<body>
+<a th:replace="~{fragments/layout :: saltar}"></a>
+<nav th:replace="~{fragments/layout :: navbar('inicio')}"></nav>
+<main class="container" id="contenido">
+    <div th:replace="~{fragments/layout :: mensajes}"></div>
+
+    <header class="cabecera">
+        <div>
+            <h1>Panel de la biblioteca</h1>
+            <p class="resumen">
+                <span class="num" th:text="${prestamosActivos}">4</span> préstamos en curso<span th:if="${prestamosRetrasados > 0}">, <span class="num text-danger" th:text="${prestamosRetrasados}">1</span> con retraso</span>
+            </p>
+        </div>
+        <a th:href="@{/prestamos/nuevo}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo<span class="etiqueta-larga"> préstamo</span></a>
+    </header>
+    <section class="estadisticas-dashboard" aria-label="Estadísticas de la biblioteca">
+
+        <a th:href="@{/libros}" class="tarjeta-estadistica">
+        <span class="icono-estadistica">
+            <i class="bi bi-book" aria-hidden="true"></i>
+        </span>
+            <span>
+            <span class="etiqueta-estadistica">Libros registrados</span>
+            <span class="valor-estadistica" th:text="${totalLibros}">0</span>
+            <span class="detalle-estadistica">Títulos en el catálogo</span>
+        </span>
+        </a>
+
+        <a th:href="@{/libros}" class="tarjeta-estadistica">
+        <span class="icono-estadistica">
+            <i class="bi bi-book-half" aria-hidden="true"></i>
+        </span>
+            <span>
+            <span class="etiqueta-estadistica">Ejemplares disponibles</span>
+            <span class="valor-estadistica" th:text="${ejemplaresDisponibles}">0</span>
+            <span class="detalle-estadistica">Copias disponibles</span>
+        </span>
+        </a>
+
+        <a th:href="@{/prestamos}" class="tarjeta-estadistica">
+        <span class="icono-estadistica">
+            <i class="bi bi-journal-check" aria-hidden="true"></i>
+        </span>
+            <span>
+            <span class="etiqueta-estadistica">Préstamos en curso</span>
+            <span class="valor-estadistica" th:text="${prestamosActivos}">0</span>
+            <span class="detalle-estadistica">Pendientes de devolución</span>
+        </span>
+        </a>
+
+        <a th:href="@{/prestamos}"
+           class="tarjeta-estadistica retrasos">
+        <span class="icono-estadistica">
+            <i class="bi bi-clock-history" aria-hidden="true"></i>
+        </span>
+            <span>
+            <span class="etiqueta-estadistica">Préstamos retrasados</span>
+            <span class="valor-estadistica" th:text="${prestamosRetrasados}">0</span>
+            <span class="detalle-estadistica">Requieren atención</span>
+        </span>
+        </a>
+
+    </section>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <section class="ficha" aria-labelledby="t-ultimos">
+                <div class="ficha-cabecera">
+                    <h2 id="t-ultimos">Últimos préstamos</h2>
+                    <a th:href="@{/prestamos}" class="nota">Ver todos los préstamos</a>
+                </div>
+                <div th:if="${#lists.isEmpty(ultimosPrestamos)}" class="sin-registros">
+                    <i class="bi bi-journal-arrow-up" aria-hidden="true"></i>
+                    <p>Todavía no hay préstamos registrados.</p>
+                    <a th:href="@{/prestamos/nuevo}" class="btn btn-primary btn-sm">Registrar el primero</a>
+                </div>
+                <div th:unless="${#lists.isEmpty(ultimosPrestamos)}" class="table-responsive">
+                    <table class="table tabla table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col" class="d-none d-md-table-cell">Usuario</th>
+                            <th scope="col">Libro<span class="d-md-none"> y usuario</span></th>
+                            <th scope="col" class="der"><span class="d-none d-md-inline">Devolver antes de</span><span class="d-md-none">Plazo</span></th>
+                            <th scope="col" class="d-none d-md-table-cell">Estado</th>
+                            <th scope="col" class="der">Acción</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="p : ${ultimosPrestamos}"
+                            th:classappend="${p.estado.name() == 'RETRASADO'} ? 'fila-retrasada' : (${p.estado.name() == 'DEVUELTO'} ? 'fila-devuelta')">
+                            <td class="d-none d-md-table-cell" th:text="${p.usuario.nombreCompleto}">Lucía García López</td>
+                            <td><span class="titulo-libro" th:text="${p.libro.titulo}">La tabla de Flandes</span><span class="secundario d-md-none" th:text="${p.usuario.nombreCompleto}">Lucía García López</span></td>
+                            <td class="fecha fecha-prevista" ><span th:text="${#temporals.format(p.fechaDevolucionPrevista, 'dd/MM/yyyy')}">15/10/2026</span><span class="d-block d-md-none mt-1"><span th:replace="~{fragments/layout :: estado(${p})}"></span></span></td>
+                            <td class="d-none d-md-table-cell"><span th:replace="~{fragments/layout :: estado(${p})}"></span></td>
+                            <td class="der">
+                                <form th:if="${p.estado.name() != 'DEVUELTO'}"
+                                      th:action="@{/prestamos/{id}/devolver(id=${p.id})}" method="post"
+                                      onsubmit="return confirm('¿Marcar este préstamo como devuelto?');">
+                                    <button type="submit" class="btn btn-success btn-sm solo-icono"
+                                            th:attr="aria-label='Marcar devuelto: ' + ${p.libro.titulo}"><i class="bi bi-arrow-return-left" aria-hidden="true"></i> <span class="etiqueta">Marcar devuelto</span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-4">
+            <section class="ficha ficha-margen" aria-labelledby="t-coleccion">
+                <div class="ficha-cabecera">
+                    <h2 id="t-coleccion">Colección</h2>
+                </div>
+                <div class="ficha-cuerpo">
+                    <ul class="inventario">
+                        <li><a th:href="@{/libros}"><span class="concepto">Libros</span><span class="puntos"></span><span class="num" th:text="${totalLibros}">8</span></a></li>
+                        <li>
+                            <a th:href="@{/libros}">
+                                <span class="concepto">Ejemplares disponibles</span>
+                                <span class="puntos"></span>
+                                <span class="num" th:text="${ejemplaresDisponibles}">0</span>
+                            </a>
+                        </li>
+                        <li><a th:href="@{/autores}"><span class="concepto">Autores</span><span class="puntos"></span><span class="num" th:text="${totalAutores}">5</span></a></li>
+                        <li><a th:href="@{/usuarios}"><span class="concepto">Usuarios</span><span class="puntos"></span><span class="num" th:text="${totalUsuarios}">5</span></a></li>
+                        <li><a th:href="@{/prestamos}"><span class="concepto">Préstamos en curso</span><span class="puntos"></span><span class="num" th:text="${prestamosActivos}">4</span></a></li>
+                        <li th:if="${prestamosRetrasados > 0}"><a th:href="@{/prestamos}" class="alerta"><span class="concepto"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Con retraso</span><span class="puntos"></span><span class="num" th:text="${prestamosRetrasados}">1</span></a></li>
+                    </ul>
+                    <div class="accesos">
+                        <a th:href="@{/libros/nuevo}" class="btn btn-secondary btn-sm"><i class="bi bi-book" aria-hidden="true"></i> Nuevo libro</a>
+                        <a th:href="@{/usuarios/nuevo}" class="btn btn-secondary btn-sm"><i class="bi bi-person-plus" aria-hidden="true"></i> Nuevo usuario</a>
+                        <a th:href="@{/autores/nuevo}" class="btn btn-secondary btn-sm"><i class="bi bi-pen" aria-hidden="true"></i> Nuevo autor</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!--  Top 5 libros mas prestados -->
+
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <section class="ficha" aria-labelledby="t-top-libros">
+                <div class="ficha-cabecera">
+                    <h2 id="t-top-libros">Top 5 libros más prestados</h2>
+                </div>
+                <div class="ficha-cuerpo">
+                    <ul class="inventario">
+                        <!-- Recorre la lista de libros que envia el controlador -->
+                        <li th:each="libro : ${topLibros}">
+                            <a th:href="@{/libros/{id}/editar(id=${libro.id})}">
+                                <span class="concepto" th:text="${libro.titulo}">Título del libro</span>
+                                <span class="puntos"></span>
+                                <span class="num" th:text="${libroStat.count}">1</span>
+                            </a>
+                        </li>
+                        <!-- Si no hay libros muestra un mensaje -->
+                        <li th:if="${#lists.isEmpty(topLibros)}">
+                            <span class="concepto">No hay préstamos registrados aún.</span>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Préstamos')}"></head>
+<body>
+<a th:replace="~{fragments/layout :: saltar}"></a>
+<nav th:replace="~{fragments/layout :: navbar('prestamos')}"></nav>
+<main class="container" id="contenido">
+    <div th:replace="~{fragments/layout :: mensajes}"></div>
+
+    <div class="formulario">
+        <header class="cabecera">
+            <div>
+                <h1>Nuevo préstamo</h1>
+                <p class="resumen">Al guardar se descuenta un ejemplar del libro.</p>
+            </div>
+        </header>
+
+        <form class="ficha ficha-margen" th:object="${prestamo}" th:action="@{/prestamos}" method="post" novalidate>
+            <div class="ficha-cabecera">
+                <h2>Datos del préstamo</h2>
+                <p class="leyenda-obligatorio">* obligatorio</p>
+            </div>
+            <div class="ficha-cuerpo">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="usuarioId" class="form-label obligatorio">Usuario</label>
+                        <select id="usuarioId" name="usuarioId" class="form-select" required
+                                th:classappend="${#fields.hasErrors('usuario')} ? 'is-invalid'">
+                            <option value="">Selecciona un usuario</option>
+                            <option th:each="u : ${usuarios}" th:value="${u.id}"
+                                    th:text="${u.nombreCompleto + ' · ' + u.email}"
+                                    th:selected="${usuarioId != null and usuarioId == u.id}"></option>
+                        </select>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('usuario')}" th:errors="*{usuario}"></div>
+                    </div>
+                    <div class="col-12">
+                        <label for="libroId" class="form-label obligatorio">Libro</label>
+                        <select id="libroId" name="libroId" class="form-select" required aria-describedby="libro-ayuda"
+                                th:classappend="${#fields.hasErrors('libro')} ? 'is-invalid'">
+                            <option value="">Selecciona un libro</option>
+                            <option th:each="l : ${libros}" th:value="${l.id}"
+                                    th:text="${l.ejemplaresDisponibles > 0} ? ${l.titulo + ' · ' + l.ejemplaresDisponibles + ' disponibles'} : ${l.titulo + ' · agotado'}"
+                                    th:disabled="${l.ejemplaresDisponibles <= 0}"
+                                    th:selected="${libroId != null and libroId == l.id}"></option>
+                        </select>
+                        <div id="libro-ayuda" class="form-text">Los libros sin ejemplares aparecen como agotados y no se pueden prestar.</div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('libro')}" th:errors="*{libro}"></div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="fechaPrestamo" class="form-label obligatorio">Fecha de préstamo</label>
+                        <input type="date" id="fechaPrestamo" th:field="*{fechaPrestamo}" class="form-control datos" required
+                               th:classappend="${#fields.hasErrors('fechaPrestamo')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('fechaPrestamo')}" th:errors="*{fechaPrestamo}"></div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label for="fechaDevolucionPrevista" class="form-label obligatorio">Devolver antes de</label>
+                        <input type="date" id="fechaDevolucionPrevista" th:field="*{fechaDevolucionPrevista}" class="form-control datos" required
+                               th:classappend="${#fields.hasErrors('fechaDevolucionPrevista')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('fechaDevolucionPrevista')}" th:errors="*{fechaDevolucionPrevista}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ficha-pie">
+                <a th:href="@{/prestamos}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar préstamo</button>
+            </div>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

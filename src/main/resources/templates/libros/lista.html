@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Libros')}"></head>
+<body>
+<a th:replace="~{fragments/layout :: saltar}"></a>
+<nav th:replace="~{fragments/layout :: navbar('libros')}"></nav>
+<main class="container" id="contenido">
+    <div th:replace="~{fragments/layout :: mensajes}"></div>
+
+
+    <header class="cabecera">
+        <div>
+            <h1>Libros</h1>
+            <p class="resumen" th:unless="${#lists.isEmpty(libros)}">
+                <span class="num" th:text="${#lists.size(libros)}">8</span>
+                resultados en el catálogo
+            </p>
+        </div>
+
+        <a class="btn btn-primary" th:href="@{/libros/nuevo}">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            Nuevo<span class="etiqueta-larga"> libro</span>
+        </a>
+    </header>
+
+    <form th:action="@{/libros}" method="get" class="filtros-catalogo">
+        <div class="campo-busqueda">
+            <label for="q" class="form-label">Buscar en el catálogo</label>
+            <div class="input-group">
+            <span class="input-group-text">
+                <i class="bi bi-search" aria-hidden="true"></i>
+            </span>
+                <input
+                        id="q"
+                        name="q"
+                        type="search"
+                        class="form-control"
+                        placeholder="Título, autor o ISBN..."
+                        th:value="${q}">
+            </div>
+        </div>
+
+        <div class="campo-disponibilidad">
+            <label for="disponibilidad" class="form-label">
+                Disponibilidad
+            </label>
+            <select id="disponibilidad"
+                    name="disponibilidad"
+                    class="form-select">
+                <option value="todos"
+                        th:selected="${disponibilidad == 'todos'}">
+                    Todos los libros
+                </option>
+                <option value="disponibles"
+                        th:selected="${disponibilidad == 'disponibles'}">
+                    Disponibles
+                </option>
+                <option value="agotados"
+                        th:selected="${disponibilidad == 'agotados'}">
+                    Agotados
+                </option>
+            </select>
+        </div>
+
+        <div class="acciones-filtros">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                Buscar
+            </button>
+
+            <a th:href="@{/libros}" class="btn btn-secondary">
+                Limpiar
+            </a>
+        </div>
+    </form>
+
+    <section class="ficha" aria-label="Catálogo de libros">
+
+        <div th:if="${#lists.isEmpty(libros)}" class="sin-registros">
+            <i class="bi bi-book" aria-hidden="true"></i>
+
+            <p th:if="${q != null and !q.isEmpty()
+                or disponibilidad != 'todos'}">
+                No hay libros que coincidan con los filtros.
+            </p>
+
+            <p th:unless="${q != null and !q.isEmpty()
+                    or disponibilidad != 'todos'}">
+                El catálogo está vacío.
+            </p>
+
+            <a th:if="${q != null and !q.isEmpty()
+                or disponibilidad != 'todos'}"
+               class="btn btn-secondary btn-sm"
+               th:href="@{/libros}">
+                Limpiar filtros
+            </a>
+
+            <a th:unless="${q != null and !q.isEmpty()
+                    or disponibilidad != 'todos'}"
+               class="btn btn-primary btn-sm"
+               th:href="@{/libros/nuevo}">
+                Añadir el primer libro
+            </a>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(libros)}" class="table-responsive">
+            <table class="table tabla table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Signatura</th>
+                    <th scope="col">Título</th>
+                    <th scope="col" class="d-none d-lg-table-cell">Autores</th>
+                    <th scope="col" class="d-none d-md-table-cell">ISBN</th>
+                    <th scope="col" class="der d-none d-sm-table-cell">Ejemplares</th>
+                    <th scope="col" class="der">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="l : ${libros}">
+                    <td><span th:replace="~{fragments/layout :: signatura(${l})}"></span></td>
+                    <td>
+                        <span class="titulo-libro" th:text="${l.titulo}">Cien años de soledad</span>
+                        <span class="secundario">
+                            <span th:text="${l.editorial} ?: 'Sin editorial'">Debolsillo</span><span th:if="${l.anioPublicacion != null}" th:text="', ' + ${l.anioPublicacion}">, 1967</span>
+                        </span>
+                        <span class="secundario d-sm-none" th:text="${l.ejemplaresDisponibles == 0} ? 'Agotado' : ${l.ejemplaresDisponibles} + ' disponibles'">3 disponibles</span>
+                    </td>
+                    <td class="d-none d-lg-table-cell">
+                        <span th:if="${l.autores.isEmpty()}" class="vacio">Sin autor</span>
+                        <span th:each="a : ${l.autores}" class="autor" th:text="${a.nombre}">Gabriel García Márquez</span>
+                    </td>
+                    <td class="datos d-none d-md-table-cell" th:text="${l.isbn}">9788497592208</td>
+                    <td class="der d-none d-sm-table-cell">
+                        <span th:if="${l.ejemplaresDisponibles == 0}" class="sello sello-agotado">Agotado</span>
+                        <span th:unless="${l.ejemplaresDisponibles == 0}" class="ejemplares"
+                              th:classappend="${l.ejemplaresDisponibles == 1} ? 'ejemplares-ultimo'"
+                              th:text="${l.ejemplaresDisponibles}">3</span>
+                    </td>
+                    <td class="der">
+                        <div class="acciones">
+                            <a class="btn btn-warning btn-sm" th:href="@{/libros/{id}/editar(id=${l.id})}"
+                               th:attr="aria-label='Editar ' + ${l.titulo}"><i class="bi bi-pencil" aria-hidden="true"></i> <span class="etiqueta">Editar</span></a>
+                            <form method="post" th:action="@{/libros/{id}/eliminar(id=${l.id})}"
+                                  onsubmit="return confirm('¿Seguro que quieres eliminar este libro?');">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                        th:attr="aria-label='Eliminar ' + ${l.titulo}"><i class="bi bi-trash3" aria-hidden="true"></i> <span class="etiqueta">Eliminar</span></button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

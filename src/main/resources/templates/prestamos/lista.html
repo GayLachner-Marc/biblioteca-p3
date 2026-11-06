@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Préstamos')}"></head>
+<body>
+<a th:replace="~{fragments/layout :: saltar}"></a>
+<nav th:replace="~{fragments/layout :: navbar('prestamos')}"></nav>
+<main class="container" id="contenido">
+    <div th:replace="~{fragments/layout :: mensajes}"></div>
+
+    <header class="cabecera"
+            th:with="enCurso=${#lists.size(prestamos.?[estado.name() != 'DEVUELTO'])},
+                     retrasados=${#lists.size(prestamos.?[estado.name() == 'RETRASADO'])}">
+        <div>
+            <h1>Préstamos</h1>
+            <p class="resumen" th:unless="${#lists.isEmpty(prestamos)}">
+                <span class="num" th:text="${enCurso}">4</span> en curso<span th:if="${retrasados > 0}">, <span class="num text-danger" th:text="${retrasados}">1</span> con retraso</span>
+            </p>
+        </div>
+        <a th:href="@{/prestamos/nuevo}" class="btn btn-primary"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo<span class="etiqueta-larga"> préstamo</span></a>
+    </header>
+
+    <section class="ficha" aria-label="Registro de préstamos">
+        <div th:if="${#lists.isEmpty(prestamos)}" class="sin-registros">
+            <i class="bi bi-journal-arrow-up" aria-hidden="true"></i>
+            <p>No hay préstamos registrados todavía.</p>
+            <a th:href="@{/prestamos/nuevo}" class="btn btn-primary btn-sm">Registrar el primero</a>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(prestamos)}" class="table-responsive">
+            <table class="table tabla table-hover">
+                <thead>
+                <tr>
+                    <th scope="col" class="d-none d-md-table-cell">Usuario</th>
+                    <th scope="col">Libro<span class="d-md-none"> y usuario</span></th>
+                    <th scope="col" class="der d-none d-md-table-cell">Prestado</th>
+                    <th scope="col" class="der"><span class="d-none d-md-inline">Devolver antes de</span><span class="d-md-none">Plazo</span></th>
+                    <th scope="col" class="der d-none d-md-table-cell">Devuelto</th>
+                    <th scope="col" class="d-none d-md-table-cell">Estado</th>
+                    <th scope="col" class="der">Acción</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${prestamos}"
+                    th:classappend="${p.estado.name() == 'RETRASADO'} ? 'fila-retrasada' : (${p.estado.name() == 'DEVUELTO'} ? 'fila-devuelta')">
+                    <td class="d-none d-md-table-cell" th:text="${p.usuario.nombreCompleto}">Lucía García López</td>
+                    <td><span class="titulo-libro" th:text="${p.libro.titulo}">La tabla de Flandes</span><span class="secundario d-md-none" th:text="${p.usuario.nombreCompleto}">Lucía García López</span></td>
+                    <td class="fecha d-none d-md-table-cell" th:text="${#temporals.format(p.fechaPrestamo, 'dd/MM/yyyy')}">01/10/2026</td>
+                    <td class="fecha fecha-prevista" ><span th:text="${#temporals.format(p.fechaDevolucionPrevista, 'dd/MM/yyyy')}">15/10/2026</span><span class="d-block d-md-none mt-1"><span th:replace="~{fragments/layout :: estado(${p})}"></span></span></td>
+                    <td class="fecha d-none d-md-table-cell">
+                        <span th:if="${p.fechaDevolucion != null}" th:text="${#temporals.format(p.fechaDevolucion, 'dd/MM/yyyy')}">14/09/2026</span>
+                        <span th:unless="${p.fechaDevolucion != null}" class="fecha-vacia">—</span>
+                    </td>
+                    <td class="d-none d-md-table-cell"><span th:replace="~{fragments/layout :: estado(${p})}"></span></td>
+                    <td class="der">
+                        <form th:if="${p.estado.name() != 'DEVUELTO'}"
+                              th:action="@{/prestamos/{id}/devolver(id=${p.id})}" method="post"
+                              onsubmit="return confirm('¿Marcar este préstamo como devuelto?');">
+                            <button type="submit" class="btn btn-success btn-sm"
+                                    th:attr="aria-label='Marcar devuelto: ' + ${p.libro.titulo}"><i class="bi bi-arrow-return-left" aria-hidden="true"></i> <span class="etiqueta">Marcar devuelto</span></button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

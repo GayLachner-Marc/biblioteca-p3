@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Usuarios')}"></head>
+<body>
+<a th:replace="~{fragments/layout :: saltar}"></a>
+<nav th:replace="~{fragments/layout :: navbar('usuarios')}"></nav>
+<main class="container" id="contenido">
+    <div th:replace="~{fragments/layout :: mensajes}"></div>
+
+    <div class="formulario">
+        <header class="cabecera">
+            <div>
+                <h1 th:text="${usuario.id == null} ? 'Nuevo usuario' : 'Editar usuario'">Nuevo usuario</h1>
+                <p class="resumen" th:text="${usuario.id == null} ? 'Alta de un socio de la biblioteca' : ${usuario.nombreCompleto}">Alta de un socio de la biblioteca</p>
+            </div>
+        </header>
+
+        <form class="ficha ficha-margen" th:object="${usuario}"
+              th:action="${usuario.id == null} ? @{/usuarios} : @{/usuarios/{id}/editar(id=${usuario.id})}"
+              method="post" novalidate>
+            <div class="ficha-cabecera">
+                <h2>Datos del socio</h2>
+                <p class="leyenda-obligatorio">* obligatorio</p>
+            </div>
+            <div class="ficha-cuerpo">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label for="nombre" class="form-label obligatorio">Nombre</label>
+                        <input type="text" id="nombre" th:field="*{nombre}" class="form-control" required autocomplete="given-name"
+                               th:classappend="${#fields.hasErrors('nombre')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+                    </div>
+                    <div class="col-md-7">
+                        <label for="apellidos" class="form-label obligatorio">Apellidos</label>
+                        <input type="text" id="apellidos" th:field="*{apellidos}" class="form-control" required autocomplete="family-name"
+                               th:classappend="${#fields.hasErrors('apellidos')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('apellidos')}" th:errors="*{apellidos}"></div>
+                    </div>
+                    <div class="col-md-7">
+                        <label for="email" class="form-label obligatorio">Email</label>
+                        <input type="email" id="email" th:field="*{email}" class="form-control" required autocomplete="email"
+                               aria-describedby="email-ayuda"
+                               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                        <div id="email-ayuda" class="form-text">No puede repetirse entre socios</div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="telefono" class="form-label">Teléfono</label>
+                        <input type="tel" id="telefono" th:field="*{telefono}" class="form-control datos" autocomplete="tel"
+                               th:classappend="${#fields.hasErrors('telefono')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
+                    </div>
+                    <div class="col-sm-6 col-md-5">
+                        <label for="fechaAlta" class="form-label obligatorio">Fecha de alta</label>
+                        <input type="date" id="fechaAlta" th:field="*{fechaAlta}" class="form-control datos" required
+                               th:classappend="${#fields.hasErrors('fechaAlta')} ? 'is-invalid'">
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('fechaAlta')}" th:errors="*{fechaAlta}"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="ficha-pie">
+                <a th:href="@{/usuarios}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar</button>
+            </div>
+        </form>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

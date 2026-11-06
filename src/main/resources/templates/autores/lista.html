@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Autores')}"></head>
+<body>
+<a th:replace="~{fragments/layout :: saltar}"></a>
+<nav th:replace="~{fragments/layout :: navbar('autores')}"></nav>
+<main class="container" id="contenido">
+    <div th:replace="~{fragments/layout :: mensajes}"></div>
+
+    <header class="cabecera">
+        <div>
+            <h1>Autores</h1>
+            <p class="resumen" th:unless="${#lists.isEmpty(autores)}">
+                <span class="num" th:text="${#lists.size(autores)}">5</span> autores en el catálogo
+            </p>
+        </div>
+        <a class="btn btn-primary" th:href="@{/autores/nuevo}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo<span class="etiqueta-larga"> autor</span></a>
+    </header>
+
+    <section class="ficha" aria-label="Lista de autores">
+        <div th:if="${#lists.isEmpty(autores)}" class="sin-registros">
+            <i class="bi bi-pen" aria-hidden="true"></i>
+            <p>No hay autores registrados todavía.</p>
+            <a class="btn btn-primary btn-sm" th:href="@{/autores/nuevo}">Añadir el primero</a>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(autores)}" class="table-responsive">
+            <table class="table tabla table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Nacionalidad</th>
+                    <th scope="col" class="d-none d-md-table-cell">Libros en el catálogo</th>
+                    <th scope="col" class="der">Nº de libros</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a : ${autores}">
+                    <td class="titulo-libro" th:text="${a.nombre}">Arturo Pérez-Reverte</td>
+                    <td>
+                        <span th:if="${a.nacionalidad != null and !a.nacionalidad.isBlank()}" th:text="${a.nacionalidad}">Española</span>
+                        <span th:unless="${a.nacionalidad != null and !a.nacionalidad.isBlank()}" class="vacio">—</span>
+                    </td>
+                    <td class="d-none d-md-table-cell">
+                        <span th:if="${a.libros.isEmpty()}" class="vacio">Ninguno todavía</span>
+                        <span th:each="l : ${a.libros}" class="autor" th:text="${l.titulo}">El capitán Alatriste</span>
+                    </td>
+                    <td class="der ejemplares" th:text="${#lists.size(a.libros)}">2</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>
