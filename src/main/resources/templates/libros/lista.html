@@ -17,7 +17,7 @@
             </p>
         </div>
 
-        <a class="btn btn-primary" th:href="@{/libros/nuevo}">
+        <a th:if="${esAdmin}" class="btn btn-primary" th:href="@{/libros/nuevo}">
             <i class="bi bi-plus-lg" aria-hidden="true"></i>
             Nuevo<span class="etiqueta-larga"> libro</span>
         </a>
@@ -96,8 +96,8 @@
                 Limpiar filtros
             </a>
 
-            <a th:unless="${q != null and !q.isEmpty()
-                    or disponibilidad != 'todos'}"
+            <a th:if="${esAdmin and !(q != null and !q.isEmpty()
+                    or disponibilidad != 'todos')}"
                class="btn btn-primary btn-sm"
                th:href="@{/libros/nuevo}">
                 Añadir el primer libro
@@ -113,7 +113,7 @@
                     <th scope="col" class="d-none d-lg-table-cell">Autores</th>
                     <th scope="col" class="d-none d-md-table-cell">ISBN</th>
                     <th scope="col" class="der d-none d-sm-table-cell">Ejemplares</th>
-                    <th scope="col" class="der">Acciones</th>
+                    <th scope="col" class="der" th:if="${esAdmin}">Acciones</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -137,7 +137,7 @@
                               th:classappend="${l.ejemplaresDisponibles == 1} ? 'ejemplares-ultimo'"
                               th:text="${l.ejemplaresDisponibles}">3</span>
                     </td>
-                    <td class="der">
+                    <td class="der" th:if="${esAdmin}">
                         <div class="acciones">
                             <a class="btn btn-warning btn-sm" th:href="@{/libros/{id}/editar(id=${l.id})}"
                                th:attr="aria-label='Editar ' + ${l.titulo}"><i class="bi bi-pencil" aria-hidden="true"></i> <span class="etiqueta">Editar</span></a>

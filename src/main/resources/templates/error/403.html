@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Acceso denegado')}"></head>
+<body>
+<a th:replace="~{fragments/layout :: saltar}"></a>
+<nav th:replace="~{fragments/layout :: navbar('')}"></nav>
+<main class="container" id="contenido">
+    <header class="cabecera">
+        <div>
+            <h1>Acceso denegado</h1>
+            <p class="resumen">Esta acción solo está disponible para administradores.</p>
+        </div>
+    </header>
+    <a th:href="@{/}" class="btn btn-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i> Volver al inicio</a>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+</body>
+</html>

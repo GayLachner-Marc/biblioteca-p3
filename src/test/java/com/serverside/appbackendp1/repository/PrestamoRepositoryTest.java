@@ -36,6 +36,7 @@ class PrestamoRepositoryTest {
         usuario.setNombre("Carlos");
         usuario.setApellidos("García López");
         usuario.setEmail("carlos.garcia@example.com");
+        usuario.setPassword("{noop}test");
         usuario.setTelefono("600123456");
         usuario.setFechaAlta(LocalDate.of(2026, 9, 1));
         usuarioRepository.save(usuario);
@@ -72,6 +73,7 @@ class PrestamoRepositoryTest {
         usuario.setNombre("María");
         usuario.setApellidos("Pérez Rodríguez");
         usuario.setEmail("maria.perez@example.com");
+        usuario.setPassword("{noop}test");
         usuario.setFechaAlta(LocalDate.of(2026, 9, 1));
         usuarioRepository.save(usuario);
 
@@ -103,6 +105,7 @@ class PrestamoRepositoryTest {
         usuario.setNombre("Juan");
         usuario.setApellidos("Martínez López");
         usuario.setEmail("juan.martinez@example.com");
+        usuario.setPassword("{noop}test");
         usuario.setFechaAlta(LocalDate.of(2026, 9, 1));
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
@@ -134,6 +137,7 @@ class PrestamoRepositoryTest {
         usuario.setNombre("Pedro");
         usuario.setApellidos("Sánchez Ruiz");
         usuario.setEmail("pedro.sanchez@example.com");
+        usuario.setPassword("{noop}test");
         usuario.setFechaAlta(LocalDate.of(2026, 9, 1));
         usuarioRepository.save(usuario);
 

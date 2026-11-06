@@ -1,4 +1,4 @@
-# Biblioteca – FP065 Producto 2
+# Biblioteca – FP065 Producto 3
 
 Aplicación de gestión de biblioteca basada en Spring Boot, diseñada para administrar usuarios, libros, autores y préstamos de forma eficiente mediante una arquitectura modular con JPA/Hibernate.
 
@@ -7,6 +7,7 @@ Aplicación de gestión de biblioteca basada en Spring Boot, diseñada para admi
 - **Spring Boot** 4.1.1
 - **Java** 25
 - **Spring Data JPA** (Hibernate)
+- **Spring Security** (login por formulario, BCrypt, roles)
 - **Thymeleaf** (templates HTML)
 - **Bootstrap** 5 (estilos)
 - **MariaDB** 11 (base de datos principal)
@@ -18,7 +19,9 @@ Aplicación de gestión de biblioteca basada en Spring Boot, diseñada para admi
 
 | Tabla | Descripción | Columnas |
 |-------|-------------|----------|
-| **usuarios** | Registro de usuarios de la biblioteca | id (PK), nombre, apellidos, email (UK), telefono, fecha_alta |
+| **usuarios** | Registro de usuarios de la biblioteca | id (PK), nombre, apellidos, email (UK), telefono, fecha_alta, password (hash BCrypt) |
+| **roles** | Roles de seguridad | id (PK), nombre (UK: ADMIN, USER) |
+| **usuario_rol** | Relación N:M entre usuarios y roles | usuario_id (FK), rol_id (FK) |
 | **libros** | Catálogo de libros | id (PK), titulo, isbn (UK), editorial, anio_publicacion, ejemplares_disponibles |
 | **autores** | Información de autores | id (PK), nombre, nacionalidad |
 | **libro_autor** | Relación N:M entre libros y autores | libro_id (FK), autor_id (FK) |
@@ -28,6 +31,7 @@ Aplicación de gestión de biblioteca basada en Spring Boot, diseñada para admi
 - **Usuario** (1:N) **Préstamo**
 - **Libro** (1:N) **Préstamo**
 - **Libro** (N:M) **Autor** (mediante tabla `libro_autor`)
+- **Usuario** (N:M) **Rol** (mediante tabla `usuario_rol`, capa de seguridad)
 
 ## Estructura de Paquetes
 
@@ -39,6 +43,23 @@ com.serverside.appbackendp1
 ├── controller/     Controladores MVC (creados por otros)
 └── templates/      Vistas Thymeleaf (creadas por otros)
 ```
+
+## Seguridad (Spring Security)
+
+- Todas las páginas requieren iniciar sesión en `/login` (usuario = email). Contraseñas cifradas con BCrypt.
+- **USER**: puede consultar los listados. **ADMIN**: además puede crear, editar, borrar y marcar préstamos como devueltos (también se ocultan esos botones a quien no es ADMIN).
+- El formulario de usuarios incluye la contraseña; los nuevos usuarios reciben el rol USER. Al editar, dejar la contraseña en blanco la mantiene.
+- Protección CSRF activa (Thymeleaf añade el token en los formularios con `th:action`). Cierre de sesión con el botón *Salir* (POST `/logout`).
+
+Usuarios de ejemplo (`db/init.sql`), contraseña `Biblioteca2026` para todos:
+
+| Email | Roles |
+|---|---|
+| andrea.valero@example.com | ADMIN, USER |
+| marc.puig@example.com | ADMIN, USER |
+| lucia.garcia@example.com, javier.martin@example.com, sara.fernandez@example.com | USER |
+
+> Si ya tenías el volumen de MariaDB del Producto 2, recrea la base de datos para que se apliquen las nuevas tablas: `docker compose down -v && docker compose up -d --build`.
 
 ## Cómo Arrancar
 

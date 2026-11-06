@@ -595,3 +595,16 @@ a { text-underline-offset: .18em; }
         transform: none;
     }
 }
+
+/* ---------- Seguridad: login y sesión ---------- */
+.acceso { max-width: 28rem; margin: 2.5rem auto 0; }
+.sesion { display: flex; align-items: center; gap: .75rem; margin-left: 1rem; }
+.sesion-usuario { color: rgba(255, 255, 255, .85); font-size: .875rem; display: inline-flex; align-items: center; gap: .35rem; }
+.sesion-usuario .bi { color: var(--laton); }
+.sesion-rol {
+    font-family: var(--datos); font-size: .75rem; text-transform: uppercase;
+    border: 1px solid var(--laton); color: var(--laton); border-radius: .2rem; padding: 0 .3rem;
+}
+@media (max-width: 991.98px) {
+    .sesion { margin: .75rem 0 .25rem; flex-wrap: wrap; }
+}

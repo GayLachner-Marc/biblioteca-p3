@@ -14,7 +14,7 @@ SANS = "DejaVu Sans, Arial, Helvetica, sans-serif"
 MONO = "DejaVu Sans Mono, Consolas, monospace"
 
 # ---------------------------------------------------------------- E/R Chen
-W, H = 1600, 1000
+W, H = 1600, 1290
 EY = 500  # y de las entidades
 ENT = {  # nombre: (cx, w)
     "USUARIO": 190, "PRÉSTAMO": 600, "LIBRO": 1010, "AUTOR": 1480}
@@ -23,7 +23,8 @@ EW, EH = 150, 60
 # (texto, cx, cy, es_pk)
 ATTRS = {
     "USUARIO": [("id", 190, 200, 1), ("nombre", 85, 300, 0), ("apellidos", 295, 300, 0),
-                ("email (UQ)", 85, 700, 0), ("telefono", 295, 700, 0), ("fecha_alta", 190, 800, 0)],
+                ("email (UQ)", 60, 620, 0), ("telefono", 320, 620, 0), ("fecha_alta", 75, 740, 0),
+                ("password", 305, 740, 0)],
     "PRÉSTAMO": [("id", 610, 200, 1), ("fecha_prestamo", 480, 300, 0),
                  ("fecha_devolucion_prevista", 735, 300, 0),
                  ("fecha_devolucion", 520, 700, 0), ("estado", 720, 700, 0)],
@@ -47,6 +48,14 @@ C_ENT, C_ENT_S = "#dbeafe", "#1e40af"
 C_REL, C_REL_S = "#dcfce7", "#15803d"
 C_NM, C_NM_S = "#fed7aa", "#c2410c"
 C_ATT_S = "#475569"
+
+# Capa de seguridad (Spring Security): entidad ROL bajo USUARIO, relación N:M vertical
+C_SEG = "#15803d"
+SEG_REL = ("tiene rol", 190, 870, 150)          # texto, cx, cy, ancho del rombo
+SEG_ENT = ("ROL", 190, 1030)                    # nombre, cx, cy
+SEG_ATTRS = [("id", 75, 1120, 1), ("nombre (UQ)", 310, 1120, 0)]
+SEG_CARD = (("N", "(1,n)"), ("M", "(0,n)"))    # lado USUARIO, lado ROL
+SEG_CAJA = (20, 800, 470, 365)                  # x, y, w, h del recuadro "capa de seguridad"
 
 
 def aw(t):
@@ -80,21 +89,44 @@ def diamond_pts(cx, cy, w, h):
 def chen():
     s = Svg(W, H)
     s.text(W / 2, 38, "Diagrama Entidad/Relación (notación Chen) · Biblioteca", 22, weight="bold")
+    # recuadro de la capa de seguridad (debajo de todo)
+    bx, by, bw, bh = SEG_CAJA
+    s.add(f'<rect x="{bx}" y="{by}" width="{bw}" height="{bh}" rx="10" fill="#f0fdf4" stroke="{C_SEG}" '
+          f'stroke-width="1.5" stroke-dasharray="8 5"/>')
+    s.text(bx + bw - 12, by + 18, "Capa de seguridad (Spring Security)", 13, "end", "bold", fill=C_SEG)
     # lineas (debajo de las formas)
     for e, lst in ATTRS.items():
         for t, x, y, pk in lst:
             s.add(f'<line x1="{ENT[e]}" y1="{EY}" x2="{x}" y2="{y}" stroke="{C_ATT_S}" stroke-width="1.3"/>')
     for i, (t, cx, w, nm, a, b) in enumerate(RELS):
         s.add(f'<line x1="{ENT[a]}" y1="{EY}" x2="{ENT[b]}" y2="{EY}" stroke="#1f2937" stroke-width="{3 if nm else 2}"/>')
+    # capa de seguridad: líneas
+    rt, rcx, rcy, rw = SEG_REL
+    et, ecx, ecy = SEG_ENT
+    s.add(f'<line x1="{ENT["USUARIO"]}" y1="{EY}" x2="{ecx}" y2="{ecy}" stroke="#1f2937" stroke-width="3"/>')
+    for t, x, y, pk in SEG_ATTRS:
+        s.add(f'<line x1="{ecx}" y1="{ecy}" x2="{x}" y2="{y}" stroke="{C_ATT_S}" stroke-width="1.3"/>')
     # atributos
-    for e, lst in ATTRS.items():
+    for e, lst in [*ATTRS.items(), ("ROL", SEG_ATTRS)]:
         for t, x, y, pk in lst:
             s.add(f'<ellipse cx="{x}" cy="{y}" rx="{aw(t)/2}" ry="23" fill="#ffffff" stroke="{C_ATT_S}" stroke-width="1.5"/>')
             s.text(x, y, t, 13, deco="underline" if pk else None, weight="bold" if pk else "normal")
     # entidades
-    for e, x in ENT.items():
-        s.add(f'<rect x="{x-EW/2}" y="{EY-EH/2}" width="{EW}" height="{EH}" fill="{C_ENT}" stroke="{C_ENT_S}" stroke-width="2.5"/>')
-        s.text(x, EY, e, 17, weight="bold", fill="#1e3a8a")
+    for e, x, y in [*((e, x, EY) for e, x in ENT.items()), (et, ecx, ecy)]:
+        s.add(f'<rect x="{x-EW/2}" y="{y-EH/2}" width="{EW}" height="{EH}" fill="{C_ENT}" stroke="{C_ENT_S}" stroke-width="2.5"/>')
+        s.text(x, y, e, 17, weight="bold", fill="#1e3a8a")
+    # rombo de la capa de seguridad (N:M usuario_rol)
+    s.add(f'<polygon points="{diamond_pts(rcx, rcy, rw, 90)}" fill="{C_NM}" stroke="{C_NM_S}" stroke-width="3.5"/>')
+    s.text(rcx, rcy, rt, 13, weight="bold", fill="#7c2d12")
+    s.add(f'<rect x="{rcx+rw/2+12}" y="{rcy-13}" width="60" height="26" rx="13" fill="{C_NM_S}"/>')
+    s.text(rcx + rw / 2 + 42, rcy, "N:M", 14, weight="bold", fill="#ffffff")
+    s.text(rcx + rw / 2 + 82, rcy - 9, "tabla intermedia", 12, "start", fill="#7c2d12")
+    s.text(rcx + rw / 2 + 82, rcy + 9, "usuario_rol", 12, "start", fill="#7c2d12")
+    (cu, mu), (cr_, mr_) = SEG_CARD
+    s.text(ENT["USUARIO"] - 16, EY + EH / 2 + 22, cu, 16, weight="bold", fill="#b91c1c")
+    s.text(ENT["USUARIO"] + 30, EY + EH / 2 + 22, mu, 13, fill="#475569")
+    s.text(ecx - 16, ecy - EH / 2 - 22, cr_, 16, weight="bold", fill="#b91c1c")
+    s.text(ecx + 30, ecy - EH / 2 - 22, mr_, 13, fill="#475569")
     # rombos
     for i, (t, cx, w, nm, a, b) in enumerate(RELS):
         f, st = (C_NM, C_NM_S) if nm else (C_REL, C_REL_S)
@@ -115,7 +147,7 @@ def chen():
         s.text(xr - 26, EY - 14, cr, 16, weight="bold", fill="#b91c1c")
         s.text(xr - 28, EY + 16, mr, 13, fill="#475569")
     # leyenda
-    ly = 880
+    ly = 1180
     s.add(f'<rect x="30" y="{ly}" width="1540" height="96" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>')
     s.text(48, ly + 18, "Leyenda", 13, "start", "bold")
     cy = ly + 56
@@ -155,10 +187,11 @@ def drawio():
         cells.append(f'<mxCell id="{i}" style="{style}" edge="1" parent="1" source="{a}" target="{b}">'
                      f'<mxGeometry relative="1" as="geometry"/></mxCell>')
 
-    for e, x in ENT.items():
+    _, ecx, ecy = SEG_ENT
+    for e, x, y in [*((e, x, EY) for e, x in ENT.items()), ("ROL", ecx, ecy)]:
         ids[e] = cell(e, f"rounded=0;whiteSpace=wrap;html=1;fillColor={C_ENT};strokeColor={C_ENT_S};strokeWidth=2;fontStyle=1;fontSize=15;",
-                      x - EW / 2, EY - EH / 2, EW, EH)
-    for e, lst in ATTRS.items():
+                      x - EW / 2, y - EH / 2, EW, EH)
+    for e, lst in [*ATTRS.items(), ("ROL", SEG_ATTRS)]:
         for t, x, y, pk in lst:
             w = aw(t)
             a = cell(t, f"ellipse;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor={C_ATT_S};fontSize=12;" + ("fontStyle=5;" if pk else ""),
@@ -181,6 +214,25 @@ def drawio():
                               (cr, xr - 26, EY - 14, "fontStyle=1;fontSize=14;fontColor=#b91c1c;"),
                               (mr, xr - 28, EY + 16, "fontSize=12;fontColor=#475569;")):
             cell(txt, "text;html=1;align=center;verticalAlign=middle;" + st, x - 22, y - 10, 44, 20)
+    # capa de seguridad: USUARIO N:M ROL
+    rt, rcx, rcy, rw = SEG_REL
+    r = cell(rt, f"rhombus;whiteSpace=wrap;html=1;fillColor={C_NM};strokeColor={C_NM_S};strokeWidth=3;fontStyle=1;fontSize=12;",
+             rcx - rw / 2, rcy - 45, rw, 90)
+    edge(ids["USUARIO"], r, "endArrow=none;html=1;strokeWidth=2;")
+    edge(r, ids["ROL"], "endArrow=none;html=1;strokeWidth=2;")
+    cell("N:M (tabla intermedia usuario_rol)", f"text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontColor={C_NM_S};",
+         rcx + rw / 2 + 10, rcy - 12, 230, 24)
+    (cu, mu), (cr_, mr_) = SEG_CARD
+    for txt, x, y, st in ((cu, ENT["USUARIO"] - 16, EY + EH / 2 + 22, "fontStyle=1;fontSize=14;fontColor=#b91c1c;"),
+                          (mu, ENT["USUARIO"] + 30, EY + EH / 2 + 22, "fontSize=12;fontColor=#475569;"),
+                          (cr_, ecx - 16, ecy - EH / 2 - 22, "fontStyle=1;fontSize=14;fontColor=#b91c1c;"),
+                          (mr_, ecx + 30, ecy - EH / 2 - 22, "fontSize=12;fontColor=#475569;")):
+        cell(txt, "text;html=1;align=center;verticalAlign=middle;" + st, x - 22, y - 10, 44, 20)
+    bx, by, bw, bh = SEG_CAJA
+    cells.insert(0, f'<mxCell id="seg" value="Capa de seguridad (Spring Security)" style="rounded=1;arcSize=4;dashed=1;'
+                    f'fillColor=#f0fdf4;strokeColor={C_SEG};fontColor={C_SEG};fontStyle=1;align=right;verticalAlign=top;'
+                    f'spacingRight=10;html=1;" vertex="1" parent="1"><mxGeometry x="{bx}" y="{by}" width="{bw}" '
+                    f'height="{bh}" as="geometry"/></mxCell>')
     return ('<mxfile host="app.diagrams.net"><diagram id="er-chen" name="ER Chen - Biblioteca">'
             f'<mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" page="1" pageScale="1" pageWidth="{W}" pageHeight="{H}">'
             '<root><mxCell id="0"/><mxCell id="1" parent="0"/>' + "".join(cells) +
@@ -188,12 +240,13 @@ def drawio():
 
 
 # --------------------------------------------------------------- Relacional
-RW, RH = 1600, 760
+RW, RH = 1600, 990
 HDR, ROW = 40, 30
 TABLAS = {  # nombre: (x, y, w, [(col, tipo, marcas)], nota)
     "usuarios": (40, 110, 290, [("id", "BIGINT", ["PK"]), ("nombre", "VARCHAR(100)", []),
                                  ("apellidos", "VARCHAR(150)", []), ("email", "VARCHAR(150)", ["UQ"]),
-                                 ("telefono", "VARCHAR(20)", ["NULL"]), ("fecha_alta", "DATE", [])], None),
+                                 ("telefono", "VARCHAR(20)", ["NULL"]), ("fecha_alta", "DATE", []),
+                                 ("password", "VARCHAR(100)", [])], ["password: hash BCrypt"]),
     "prestamos": (430, 110, 340, [("id", "BIGINT", ["PK"]), ("usuario_id", "BIGINT", ["FK"]),
                                    ("libro_id", "BIGINT", ["FK"]), ("fecha_prestamo", "DATE", []),
                                    ("fecha_devolucion_prevista", "DATE", []),
@@ -207,7 +260,13 @@ TABLAS = {  # nombre: (x, y, w, [(col, tipo, marcas)], nota)
                     ["PK compuesta (libro_id, autor_id)", "FK: ON DELETE CASCADE"]),
     "autores": (1290, 330, 290, [("id", "BIGINT", ["PK"]), ("nombre", "VARCHAR(150)", []),
                                   ("nacionalidad", "VARCHAR(100)", ["NULL"])], None),
+    # capa de seguridad
+    "usuario_rol": (40, 470, 290, [("usuario_id", "BIGINT", ["PK", "FK"]), ("rol_id", "BIGINT", ["PK", "FK"])],
+                    ["PK compuesta (usuario_id, rol_id)", "FK usuario_id: ON DELETE CASCADE"]),
+    "roles": (430, 470, 290, [("id", "BIGINT", ["PK"]), ("nombre", "VARCHAR(30)", ["UQ"])],
+              ["nombre: ADMIN | USER (sin prefijo ROLE_)"]),
 }
+SEGURIDAD = {"usuario_rol", "roles"}
 BADGE = {"PK": ("#fef3c7", "#b45309"), "FK": ("#dbeafe", "#1d4ed8"),
          "UQ": ("#ede9fe", "#6d28d9"), "NULL": ("#f1f5f9", "#475569")}
 
@@ -269,13 +328,37 @@ def relacional():
         s.add(f'<line x1="{cx-8}" y1="{yr-off}" x2="{cx+8}" y2="{yr-off}" stroke="{ln}" stroke-width="1.8"/>')
     s.text(cx + 18, ybot + 18, "N", 14, "start", weight="bold", fill="#b91c1c")
     s.text(cx + 18, yr - 14, "1", 14, "start", weight="bold", fill="#b91c1c")
+    # capa de seguridad: recuadro + conexiones
+    xs, ys, ws, _, _ = TABLAS["usuario_rol"]
+    xo, yo, wo, _, _ = TABLAS["roles"]
+    s.add(f'<rect x="20" y="{ys-50}" width="{xo+wo+20-20}" height="210" rx="10" fill="#f0fdf4" stroke="{C_SEG}" '
+          f'stroke-width="1.5" stroke-dasharray="8 5"/>')
+    s.text(xo + wo, ys - 32, "Capa de seguridad (Spring Security)", 13, "end", "bold", fill=C_SEG)
+    # usuario_rol.usuario_id -> usuarios.id (vertical, por abajo de usuarios)
+    cx = xs + ws - 40
+    ytop = ys
+    ybot_u = yu + HDR + len(TABLAS["usuarios"][3]) * ROW
+    path(f"M{cx},{ytop} V{ybot_u}")
+    for dx in (-9, 0, 9):
+        s.add(f'<line x1="{cx}" y1="{ytop-16}" x2="{cx+dx}" y2="{ytop}" stroke="{ln}" stroke-width="1.8"/>')
+    for off in (10, 16):
+        s.add(f'<line x1="{cx-8}" y1="{ybot_u+off}" x2="{cx+8}" y2="{ybot_u+off}" stroke="{ln}" stroke-width="1.8"/>')
+    s.text(cx + 18, ytop - 16, "N", 14, "start", weight="bold", fill="#b91c1c")
+    s.text(cx + 18, ybot_u + 16, "1", 14, "start", weight="bold", fill="#b91c1c")
+    # usuario_rol.rol_id -> roles.id
+    a, b, mx = rowy("usuario_rol", 1), rowy("roles", 0), (xs + ws + xo) / 2
+    path(f"M{xs+ws},{a} H{mx} V{b} H{xo}")
+    crow(s, xs + ws, a, 1); one(s, xo, b, -1)
+    s.text(xs + ws + 14, a - 16, "N", 14, weight="bold", fill="#b91c1c")
+    s.text(xo - 14, b - 16, "1", 14, weight="bold", fill="#b91c1c")
     # tablas
     for t, (x, y, w, cols, nota) in TABLAS.items():
         h = HDR + len(cols) * ROW
         s.add(f'<rect x="{x+3}" y="{y+3}" width="{w}" height="{h}" rx="6" fill="#0f172a" opacity="0.08"/>')
         s.add(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="6" fill="#ffffff" stroke="#1e40af" stroke-width="2"/>')
-        inter = t == "libro_autor"
-        s.add(f'<path d="M{x},{y+HDR} V{y+6} Q{x},{y} {x+6},{y} H{x+w-6} Q{x+w},{y} {x+w},{y+6} V{y+HDR} Z" fill="{C_NM_S if inter else "#1e40af"}"/>')
+        inter = t in ("libro_autor", "usuario_rol")
+        cab = C_NM_S if inter else (C_SEG if t in SEGURIDAD else "#1e40af")
+        s.add(f'<path d="M{x},{y+HDR} V{y+6} Q{x},{y} {x+6},{y} H{x+w-6} Q{x+w},{y} {x+w},{y+6} V{y+HDR} Z" fill="{cab}"/>')
         s.text(x + w / 2, y + HDR / 2, t + (" (N:M)" if inter else ""), 15, weight="bold", fill="#ffffff")
         for i, (c, ty, marks) in enumerate(cols):
             ry = y + HDR + i * ROW
@@ -294,8 +377,8 @@ def relacional():
             for k, ln_ in enumerate(nota):
                 s.text(x + 4, y + h + 18 + 16 * k, ln_, 12, "start", fill="#475569", style='font-style="italic"')
     # leyenda / notas
-    ly = 470
-    s.add(f'<rect x="40" y="{ly}" width="1000" height="250" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>')
+    ly = 700
+    s.add(f'<rect x="40" y="{ly}" width="1520" height="270" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>')
     s.text(58, ly + 20, "Leyenda y relaciones", 14, "start", "bold")
     x0 = 58
     for k, (m, d) in enumerate([("PK", "clave primaria"), ("FK", "clave foránea"), ("UQ", "valor único (UNIQUE)"),
@@ -313,6 +396,7 @@ def relacional():
            "libros 1 : N prestamos   (prestamos.libro_id → libros.id)",
            "libros N : M autores   (a través de libro_autor, PK compuesta libro_id + autor_id)",
            "libro_autor.libro_id → libros.id   y   libro_autor.autor_id → autores.id",
+           "usuarios N : M roles   (capa de seguridad, a través de usuario_rol, PK compuesta usuario_id + rol_id)",
            "Claves BIGINT AUTO_INCREMENT · libro_autor: ambas FK con ON DELETE CASCADE · prestamos.estado: VARCHAR(20) + CHECK"]
     for i, r in enumerate(rel):
         s.text(58, ly + 125 + i * 24, "• " + r, 13, "start", font=SANS)

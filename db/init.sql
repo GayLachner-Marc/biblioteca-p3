@@ -13,8 +13,27 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email       VARCHAR(150) NOT NULL,
     telefono    VARCHAR(20)  NULL,
     fecha_alta  DATE         NOT NULL,
+    password    VARCHAR(100) NOT NULL COMMENT 'Hash BCrypt',
     PRIMARY KEY (id),
     CONSTRAINT uk_usuarios_email UNIQUE (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ---------- Capa de seguridad (Spring Security) ----------
+
+CREATE TABLE IF NOT EXISTS roles (
+    id     BIGINT      NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(30) NOT NULL COMMENT 'Sin prefijo ROLE_: ADMIN, USER',
+    PRIMARY KEY (id),
+    CONSTRAINT uk_roles_nombre UNIQUE (nombre)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Relación N:M Usuario <-> Rol
+CREATE TABLE IF NOT EXISTS usuario_rol (
+    usuario_id BIGINT NOT NULL,
+    rol_id     BIGINT NOT NULL,
+    PRIMARY KEY (usuario_id, rol_id),
+    CONSTRAINT fk_usuario_rol_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE,
+    CONSTRAINT fk_usuario_rol_rol     FOREIGN KEY (rol_id)     REFERENCES roles (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS libros (
@@ -60,12 +79,19 @@ CREATE TABLE IF NOT EXISTS prestamos (
 
 -- ---------- Datos de ejemplo ----------
 
-INSERT INTO usuarios (nombre, apellidos, email, telefono, fecha_alta) VALUES
-('Lucía',  'García López',     'lucia.garcia@example.com',  '600111222', '2026-01-15'),
-('Marc',   'Puig Ferrer',      'marc.puig@example.com',     '600222333', '2026-02-03'),
-('Andrea', 'Valero Sanz',      'andrea.valero@example.com', '600333444', '2026-03-10'),
-('Javier', 'Martín Ruiz',      'javier.martin@example.com', '600444555', '2026-04-22'),
-('Sara',   'Fernández Gómez',  'sara.fernandez@example.com','600555666', '2026-05-30');
+-- Contraseña de todos los usuarios de ejemplo: Biblioteca2026 (hash BCrypt, coste 10)
+INSERT INTO usuarios (nombre, apellidos, email, telefono, fecha_alta, password) VALUES
+('Lucía',  'García López',     'lucia.garcia@example.com',  '600111222', '2026-01-15', '$2a$10$GBbzUQG6tc6eL3e8KFwz9ue9rzaVP90rRLbNkqHR/ncKFeQlb/.FW'),
+('Marc',   'Puig Ferrer',      'marc.puig@example.com',     '600222333', '2026-02-03', '$2a$10$GBbzUQG6tc6eL3e8KFwz9ue9rzaVP90rRLbNkqHR/ncKFeQlb/.FW'),
+('Andrea', 'Valero Sanz',      'andrea.valero@example.com', '600333444', '2026-03-10', '$2a$10$GBbzUQG6tc6eL3e8KFwz9ue9rzaVP90rRLbNkqHR/ncKFeQlb/.FW'),
+('Javier', 'Martín Ruiz',      'javier.martin@example.com', '600444555', '2026-04-22', '$2a$10$GBbzUQG6tc6eL3e8KFwz9ue9rzaVP90rRLbNkqHR/ncKFeQlb/.FW'),
+('Sara',   'Fernández Gómez',  'sara.fernandez@example.com','600555666', '2026-05-30', '$2a$10$GBbzUQG6tc6eL3e8KFwz9ue9rzaVP90rRLbNkqHR/ncKFeQlb/.FW');
+
+INSERT INTO roles (nombre) VALUES ('ADMIN'), ('USER');
+
+-- Andrea y Marc son administradores; todos tienen el rol USER
+INSERT INTO usuario_rol (usuario_id, rol_id) VALUES
+(1, 2), (2, 1), (2, 2), (3, 1), (3, 2), (4, 2), (5, 2);
 
 INSERT INTO autores (nombre, nacionalidad) VALUES
 ('Gabriel García Márquez', 'Colombiana'),

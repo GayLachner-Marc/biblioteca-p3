@@ -58,6 +58,28 @@
                     </div>
                 </div>
             </div>
+            <div class="ficha-cabecera">
+                <h2>Acceso</h2>
+                <p class="nota" th:if="${usuario.id != null}">Déjalo en blanco para mantener la contraseña actual</p>
+            </div>
+            <div class="ficha-cuerpo">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="passwordNueva" class="form-label" th:classappend="${usuario.id == null} ? 'obligatorio'">Contraseña</label>
+                        <input type="password" id="passwordNueva" name="passwordNueva" class="form-control"
+                               th:required="${usuario.id == null}" autocomplete="new-password" minlength="8" maxlength="72"
+                               aria-describedby="password-ayuda"
+                               th:classappend="${#fields.hasErrors('passwordNueva')} ? 'is-invalid'">
+                        <div id="password-ayuda" class="form-text">Entre 8 y 72 caracteres</div>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('passwordNueva')}" th:errors="*{passwordNueva}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="passwordConfirmacion" class="form-label" th:classappend="${usuario.id == null} ? 'obligatorio'">Repetir contraseña</label>
+                        <input type="password" id="passwordConfirmacion" name="passwordConfirmacion" class="form-control"
+                               th:required="${usuario.id == null}" autocomplete="new-password" maxlength="72">
+                    </div>
+                </div>
+            </div>
             <div class="ficha-pie">
                 <a th:href="@{/usuarios}" class="btn btn-secondary">Cancelar</a>
                 <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Guardar</button>

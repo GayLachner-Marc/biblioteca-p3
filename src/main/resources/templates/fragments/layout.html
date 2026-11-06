@@ -33,6 +33,17 @@
                 <li class="nav-item"><a class="nav-link" th:classappend="${activo == 'prestamos'} ? 'active'" th:attr="aria-current=${activo == 'prestamos'} ? 'page'" th:href="@{/prestamos}">Préstamos</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${activo == 'autores'} ? 'active'" th:attr="aria-current=${activo == 'autores'} ? 'page'" th:href="@{/autores}">Autores</a></li>
             </ul>
+            <!-- Sesión (Spring Security): usuario conectado y cierre de sesión (POST con token CSRF) -->
+            <form th:if="${usuarioActual != null}" th:action="@{/logout}" method="post" class="sesion">
+                <span class="sesion-usuario">
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
+                    <span th:text="${usuarioActual}">andrea.valero@example.com</span>
+                    <span th:if="${esAdmin}" class="sesion-rol">admin</span>
+                </span>
+                <button type="submit" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Salir
+                </button>
+            </form>
         </div>
     </div>
 </nav>
@@ -66,7 +77,7 @@
 </span>
 
 <footer th:fragment="footer" class="pie">
-    <div class="container">Biblioteca · FP065 Producto 2 · Spring Boot, Thymeleaf y MariaDB</div>
+    <div class="container">Biblioteca · FP065 Producto 3 · Spring Boot, Spring Security, Thymeleaf y MariaDB</div>
 </footer>
 
 <th:block th:fragment="scripts">
