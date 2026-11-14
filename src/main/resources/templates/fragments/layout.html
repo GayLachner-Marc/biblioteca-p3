@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:fragment="head(titulo)">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -27,11 +27,29 @@
         </button>
         <div class="collapse navbar-collapse" id="menu">
             <ul class="navbar-nav ms-auto">
+                <!-- Enlaces visibles para todos los logueados -->
                 <li class="nav-item"><a class="nav-link" th:classappend="${activo == 'inicio'} ? 'active'" th:attr="aria-current=${activo == 'inicio'} ? 'page'" th:href="@{/}">Inicio</a></li>
                 <li class="nav-item"><a class="nav-link" th:classappend="${activo == 'libros'} ? 'active'" th:attr="aria-current=${activo == 'libros'} ? 'page'" th:href="@{/libros}">Libros</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${activo == 'usuarios'} ? 'active'" th:attr="aria-current=${activo == 'usuarios'} ? 'page'" th:href="@{/usuarios}">Usuarios</a></li>
-                <li class="nav-item"><a class="nav-link" th:classappend="${activo == 'prestamos'} ? 'active'" th:attr="aria-current=${activo == 'prestamos'} ? 'page'" th:href="@{/prestamos}">Préstamos</a></li>
+
+                <!-- Enlace Usuarios (Solo ADMIN) -->
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:classappend="${activo == 'usuarios'} ? 'active'" th:attr="aria-current=${activo == 'usuarios'} ? 'page'" th:href="@{/usuarios}">Usuarios</a>
+                </li>
+
+                <!-- Enlace Préstamos (Solo ADMIN) -->
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a class="nav-link" th:classappend="${activo == 'prestamos'} ? 'active'" th:attr="aria-current=${activo == 'prestamos'} ? 'page'" th:href="@{/prestamos}">Préstamos</a>
+                </li>
+
+                <!-- Enlace Autores (Visible para todos) -->
                 <li class="nav-item"><a class="nav-link" th:classappend="${activo == 'autores'} ? 'active'" th:attr="aria-current=${activo == 'autores'} ? 'page'" th:href="@{/autores}">Autores</a></li>
+
+                <!-- Botón Cerrar Sesión (Para todos los logueados) -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" class="d-flex align-items-center h-100 ms-2">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Cerrar sesión</button>
+                    </form>
+                </li>
             </ul>
             <!-- Sesión (Spring Security): usuario conectado y cierre de sesión (POST con token CSRF) -->
             <form th:if="${usuarioActual != null}" th:action="@{/logout}" method="post" class="sesion">
