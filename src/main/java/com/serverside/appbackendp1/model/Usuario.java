@@ -6,7 +6,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
@@ -41,6 +43,21 @@ public class Usuario {
     @Column(name = "fecha_alta", nullable = false)
     private LocalDate fechaAlta = LocalDate.now();
 
+    /** Hash BCrypt de la contraseña (nunca se enlaza directamente desde formularios). */
+    @Column(nullable = false, length = 100)
+    private String password;
+
+    /** Contraseña en claro introducida en el formulario de registro; no se persiste. */
+    @Transient
+    private String passwordNueva;
+
+    /** Roles de seguridad del usuario (relación N:M mediante usuario_rol). */
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "usuario_rol",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "rol_id"))
+    private Set<Rol> roles = new HashSet<>();
+
     @OneToMany(mappedBy = "usuario")
     private List<Prestamo> prestamos = new ArrayList<>();
 
@@ -58,6 +75,12 @@ public class Usuario {
     public void setTelefono(String telefono) { this.telefono = telefono; }
     public LocalDate getFechaAlta() { return fechaAlta; }
     public void setFechaAlta(LocalDate fechaAlta) { this.fechaAlta = fechaAlta; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public String getPasswordNueva() { return passwordNueva; }
+    public void setPasswordNueva(String passwordNueva) { this.passwordNueva = passwordNueva; }
+    public Set<Rol> getRoles() { return roles; }
+    public void setRoles(Set<Rol> roles) { this.roles = roles; }
     public List<Prestamo> getPrestamos() { return prestamos; }
     public void setPrestamos(List<Prestamo> prestamos) { this.prestamos = prestamos; }
 }

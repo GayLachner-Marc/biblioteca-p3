@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@WithMockUser(roles = "ADMIN")
 class BibliotecaControllerTest {
 
     @Autowired
@@ -51,7 +54,7 @@ class BibliotecaControllerTest {
 
     @Test
     void crearLibroValidoRedirigeYLoGuarda() throws Exception {
-        mockMvc.perform(post("/libros")
+        mockMvc.perform(post("/libros").with(csrf())
                         .param("titulo", "Libro de prueba")
                         .param("isbn", "TEST-0001")
                         .param("editorial", "Editorial")
@@ -65,7 +68,7 @@ class BibliotecaControllerTest {
 
     @Test
     void crearLibroSinTituloMuestraErrores() throws Exception {
-        mockMvc.perform(post("/libros")
+        mockMvc.perform(post("/libros").with(csrf())
                         .param("titulo", "")
                         .param("isbn", "TEST-0002")
                         .param("ejemplaresDisponibles", "1"))
@@ -87,6 +90,7 @@ class BibliotecaControllerTest {
         usuario.setNombre("Ana");
         usuario.setApellidos("Prueba");
         usuario.setEmail("ana.prueba@example.com");
+        usuario.setPassword("{noop}test");
         usuarioRepository.save(usuario);
 
         Prestamo prestamo = new Prestamo();
@@ -97,7 +101,7 @@ class BibliotecaControllerTest {
         prestamo.setFechaDevolucionPrevista(LocalDate.now().plusDays(15));
         prestamoRepository.save(prestamo);
 
-        mockMvc.perform(post("/libros/{id}/eliminar", libro.getId()))
+        mockMvc.perform(post("/libros/{id}/eliminar", libro.getId()).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(flash().attributeExists("error"));
 

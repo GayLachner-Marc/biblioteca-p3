@@ -14,14 +14,14 @@
                 <span class="num" th:text="${#lists.size(autores)}">5</span> autores en el catálogo
             </p>
         </div>
-        <a class="btn btn-primary" th:href="@{/autores/nuevo}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo<span class="etiqueta-larga"> autor</span></a>
+        <a th:if="${esAdmin}" class="btn btn-primary" th:href="@{/autores/nuevo}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo<span class="etiqueta-larga"> autor</span></a>
     </header>
 
     <section class="ficha" aria-label="Lista de autores">
         <div th:if="${#lists.isEmpty(autores)}" class="sin-registros">
             <i class="bi bi-pen" aria-hidden="true"></i>
             <p>No hay autores registrados todavía.</p>
-            <a class="btn btn-primary btn-sm" th:href="@{/autores/nuevo}">Añadir el primero</a>
+            <a th:if="${esAdmin}" class="btn btn-primary btn-sm" th:href="@{/autores/nuevo}">Añadir el primero</a>
         </div>
 
         <div th:unless="${#lists.isEmpty(autores)}" class="table-responsive">
