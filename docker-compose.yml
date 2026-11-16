@@ -1,7 +1,8 @@
+
 services:
   db:
     image: mariadb:11
-    container_name: biblioteca-db
+    container_name: biblioteca-p3-db
     environment:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: biblioteca
@@ -11,7 +12,7 @@ services:
       - db_data:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     ports:
-      - "3307:3306"
+      - "3308:3306"
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
@@ -21,7 +22,7 @@ services:
 
   app:
     build: .
-    container_name: biblioteca-app
+    container_name: biblioteca-p3-app
     depends_on:
       db:
         condition: service_healthy
@@ -30,7 +31,7 @@ services:
       SPRING_DATASOURCE_USERNAME: biblioteca
       SPRING_DATASOURCE_PASSWORD: biblioteca
     ports:
-      - "8080:8080"
+      - "8081:8080"
     restart: unless-stopped
 
 volumes:
