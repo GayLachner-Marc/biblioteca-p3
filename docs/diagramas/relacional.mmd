@@ -3,6 +3,8 @@ erDiagram
     LIBROS ||--o{ PRESTAMOS : "se presta en"
     LIBROS ||--o{ LIBRO_AUTOR : "tiene"
     AUTORES ||--o{ LIBRO_AUTOR : "escribe"
+    USUARIOS ||--|{ USUARIO_ROL : "tiene"
+    ROLES ||--o{ USUARIO_ROL : "asignado a"
 
     USUARIOS {
         BIGINT id PK "AUTO_INCREMENT"
@@ -11,6 +13,15 @@ erDiagram
         VARCHAR(150) email UK
         VARCHAR(20) telefono "NULL"
         DATE fecha_alta
+        VARCHAR(100) password "hash BCrypt"
+    }
+    ROLES {
+        BIGINT id PK "AUTO_INCREMENT"
+        VARCHAR(30) nombre UK "ADMIN, USER"
+    }
+    USUARIO_ROL {
+        BIGINT usuario_id PK, FK "ON DELETE CASCADE"
+        BIGINT rol_id PK, FK
     }
     LIBROS {
         BIGINT id PK "AUTO_INCREMENT"

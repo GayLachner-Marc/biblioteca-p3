@@ -16,6 +16,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class UsuarioController {
 
     private static final String REDIRECT_LISTA = "redirect:/usuarios";
+    private static final int PASSWORD_MIN = 8;
+    /** BCrypt solo tiene en cuenta los primeros 72 bytes. */
+    private static final int PASSWORD_MAX = 72;
 
     private final UsuarioService usuarioService;
 
@@ -25,7 +28,7 @@ public class UsuarioController {
 
     @InitBinder("usuario")
     void configurarBinder(WebDataBinder binder) {
-        binder.setDisallowedFields("id", "prestamos");
+        binder.setDisallowedFields("id", "prestamos", "password", "roles");
     }
 
     @GetMapping
@@ -42,10 +45,12 @@ public class UsuarioController {
 
     @PostMapping
     public String crear(@Valid @ModelAttribute("usuario") Usuario usuario, BindingResult result,
+                        @RequestParam(name = "passwordConfirmacion", required = false) String confirmacion,
                         RedirectAttributes ra) {
         normalizar(usuario);
         usuario.setId(null);
         validarEmail(usuario, result);
+        validarPassword(usuario, confirmacion, true, result);
         if (result.hasErrors()) {
             return "usuarios/formulario";
         }
@@ -69,13 +74,16 @@ public class UsuarioController {
 
     @PostMapping("/{id}/editar")
     public String actualizar(@PathVariable Long id, @Valid @ModelAttribute("usuario") Usuario usuario,
-                             BindingResult result, RedirectAttributes ra) {
+                             BindingResult result,
+                             @RequestParam(name = "passwordConfirmacion", required = false) String confirmacion,
+                             RedirectAttributes ra) {
         if (usuarioService.buscarPorId(id).isEmpty()) {
             return noEncontrado(ra);
         }
         normalizar(usuario);
         usuario.setId(id);
         validarEmail(usuario, result);
+        validarPassword(usuario, confirmacion, false, result);
         if (result.hasErrors()) {
             return "usuarios/formulario";
         }
@@ -115,6 +123,23 @@ public class UsuarioController {
     private void validarEmail(Usuario usuario, BindingResult result) {
         if (!result.hasFieldErrors("email") && usuarioService.emailDuplicado(usuario.getEmail(), usuario.getId())) {
             result.rejectValue("email", "duplicado", "Ya existe un usuario con ese email");
+        }
+    }
+
+    /** En el alta la contraseña es obligatoria; al editar, vacía significa "no cambiarla". */
+    private void validarPassword(Usuario usuario, String confirmacion, boolean obligatoria, BindingResult result) {
+        String password = usuario.getPasswordNueva();
+        if (password == null || password.isEmpty()) {
+            if (obligatoria) {
+                result.rejectValue("passwordNueva", "obligatoria", "La contraseña es obligatoria");
+            }
+            return;
+        }
+        if (password.length() < PASSWORD_MIN || password.length() > PASSWORD_MAX) {
+            result.rejectValue("passwordNueva", "longitud",
+                    "La contraseña debe tener entre " + PASSWORD_MIN + " y " + PASSWORD_MAX + " caracteres");
+        } else if (!password.equals(confirmacion)) {
+            result.rejectValue("passwordNueva", "confirmacion", "Las contraseñas no coinciden");
         }
     }
 
